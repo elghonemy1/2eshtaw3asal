@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>منيو قشطة وعسل</title>
+  <!-- Preload لصورة الخلفية لتحسين سرعة التحميل -->
+  <link rel="preload" as="image" href="https://i.imgur.com/PDgHN0A.png">
+  <!-- إضافة خط "Cairo" -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo&display=swap" rel="stylesheet">
+  <style>
+    /* إعدادات عامة */
+    body {
+      margin: 0;
+      font-family: 'Cairo', sans-serif;
+      overflow: hidden;
+    }
+    /* شاشة الاستقبال (Splash Screen) */
+    #splash-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      background: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 10;
+    }
+    /* الخلفية مع تأثير التلاشي لشاشة الاستقبال */
+    #splash-screen::before {
+      content: "";
+      position: absolute;
+      top: 0; 
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('https://i.imgur.com/PDgHN0A.png') center/cover no-repeat;
+      animation: bgFadeOut 3s ease-out 2s forwards;
+      z-index: -1;
+    }
+    /* حاوية اللوجو */
+    .logo-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .main-logo {
+      max-width: 40%;
+      height: auto;
+      animation: fadeIn 2s ease-in, bounce 3s infinite ease-in-out;
+    }
+    /* الشعار الثانوي: أصغر وثابت في أسفل الصفحة على اليسار مع حركة انيميشن مخففة */
+    .second-logo {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      max-width: 10%;
+      height: auto;
+      opacity: 0;
+      animation: fadeInMin 1s ease-in 1.5s forwards;
+    }
+    /* نص "جارى عرض المنيو" مع النقاط المتحركة */
+    .loading-text {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      color: #333;
+    }
+    .loading-text .dot {
+      opacity: 0;
+      animation: blink 1.5s infinite;
+    }
+    .loading-text .dot:nth-child(2) {
+      animation-delay: 0.3s;
+    }
+    .loading-text .dot:nth-child(3) {
+      animation-delay: 0.6s;
+    }
+    /* تأثيرات الانيميشن */
+    @keyframes blink {
+      0%, 20% { opacity: 0; }
+      50% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    @keyframes fadeIn {
+      0% { opacity: 0; transform: scale(0.8); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    @keyframes fadeInMin {
+      0% { opacity: 0; transform: scale(0.95); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    @keyframes bgFadeOut {
+      0% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    /* حاوية عرض المنيو (الـ PDF) */
+    #menu-container {
+      display: none;
+      width: 100%;
+      height: 100vh;
+      overflow-y: auto;
+      /* خلفية مخصصة تمتد خلف صفحات الـ PDF */
+      background: url('https://example.com/your-background-image.jpg') no-repeat center center fixed;
+      background-size: cover;
+    }
+    /* تنسيق صفحات PDF */
+    .pdf-page {
+      display: block;
+      margin: 0;
+      background: transparent;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      box-shadow: none;
+      border: none;
+      background: transparent;
+    }
+    @media (max-width: 768px) {
+      .main-logo { max-width: 70%; }
+      .second-logo { max-width: 15%; bottom: 5px; left: 5px; }
+      .loading-text { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <!-- شاشة الاستقبال -->
+  <div id="splash-screen">
+    <div class="logo-container">
+      <img class="main-logo" src="https://i.imgur.com/eCo7Ams.png" alt="لوجو المطعم" loading="lazy">
+      <img class="second-logo" src="https://i.imgur.com/PNYGCQt.png" alt="لوجو إضافي" loading="lazy">
+    </div>
+    <div class="loading-text">
+      جارى عرض المنيو<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
+    </div>
+  </div>
+  
+  <!-- حاوية عرض المنيو (PDF) -->
+  <div id="menu-container">
+    <!-- حاوية صفحات PDF التي سيتم ملؤها بواسطة PDF.js -->
+    <div id="pdf-container"></div>
+  </div>
+  
+  <!-- سكربت شاشة الاستقبال -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // مدة عرض شاشة الاستقبال (يمكن تعديلها حسب الحاجة)
+      const splashDuration = 5000; // 5 ثوانٍ
+      setTimeout(() => {
+        // إخفاء شاشة الاستقبال وعرض حاوية المنيو
+        document.getElementById('splash-screen').style.display = 'none';
+        document.getElementById('menu-container').style.display = 'block';
+      }, splashDuration);
+    });
+  </script>
+  
+  <!-- تحميل مكتبة PDF.js من CDNJS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+  <script>
+    // التأكد من تحميل مكتبة PDF.js وإعداد الـ worker
+    if (typeof pdfjsLib === 'undefined') {
+      console.error('فشل تحميل مكتبة PDF.js');
+    } else {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js';
+    }
+    
+    // رابط ملف PDF الخاص بالمنيو (تأكد من صحته)
+    const url = 'https://cdn.jsdelivr.net/gh/elghonemy1/last1/2eshta%20w%203asal%20menu.pdf';
+    const container = document.getElementById('pdf-container');
+    
+    // تحميل وثيقة PDF وعرض كل صفحة مع حساب قيمة التكبير تلقائيًا
+    pdfjsLib.getDocument(url).promise.then(function(pdfDoc) {
+      console.log('تم تحميل PDF، عدد الصفحات:', pdfDoc.numPages);
+      for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+        pdfDoc.getPage(pageNum).then(function(page) {
+          // الحصول على الأبعاد الأصلية للصفحة (scale = 1)
+          let unscaledViewport = page.getViewport({ scale: 1 });
+          // حساب قيمة التكبير بحيث تملأ الصفحة عرض النافذة
+          let desiredScale = window.innerWidth / unscaledViewport.width;
+          let viewport = page.getViewport({ scale: desiredScale });
+          
+          let canvas = document.createElement('canvas');
+          canvas.className = 'pdf-page';
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          container.appendChild(canvas);
+          
+          let ctx = canvas.getContext('2d');
+          let renderContext = {
+            canvasContext: ctx,
+            viewport: viewport
+          };
+          page.render(renderContext).promise.then(function() {
+            console.log('تم عرض الصفحة رقم:', pageNum);
+          });
+        });
+      }
+    }).catch(function(error) {
+      console.error('خطأ في تحميل الـ PDF:', error);
+    });
+  </script>
+</body>
+</html>
